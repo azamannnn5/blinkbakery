@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shop | Blinks Bakery</title><meta name="description" content="Browse the Blinks Bakery menu.">
+<meta name="theme-color" content="#07030d"><link rel="icon" href="img/brand/favicon.png">
+<link rel="stylesheet" href="css/style.css">
+</head><body data-page="shop" >
+<div id="hdr"></div>
+<main>
+<div class="wrap">
+<div class="page-head"><div><span class="eyebrow">The menu</span><h1 class="display honey" id="ttl">The full menu</h1><p id="sub"></p></div><img id="hi" src="" alt="" hidden></div>
+<div class="chips" id="tabs" style="margin-top:14px"></div>
+<div class="toolbar"><div class="search"><span class="sr"><label for="s">Search</label></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input class="input" id="s" type="search" placeholder="Search the menu"></div>
+<div class="chips" id="chips"></div>
+<select class="input" id="sort" aria-label="Sort"><option value="new">Newest</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option><option value="az">A to Z</option></select></div>
+<p class="count-line" id="cnt"></p>
+<div class="grid" id="grid"></div>
+<div class="empty" id="empty" hidden><h3>Nothing here</h3><p>Try a different search or shelf.</p></div>
+<div class="more" id="more" hidden><button class="btn ghost" id="loadmore">Load more</button></div>
+</div>
+</main>
+<div id="ftr"></div>
+<script src="js/config.js"></script><script src="js/products.js"></script><script src="js/app.js"></script>
+</body></html>

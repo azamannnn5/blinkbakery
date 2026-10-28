@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cart | Blinks Bakery</title><meta name="description" content="Your Blinks Bakery cart.">
+<meta name="theme-color" content="#07030d"><link rel="icon" href="img/brand/favicon.png">
+<link rel="stylesheet" href="css/style.css">
+</head><body data-page="cart" >
+<div id="hdr"></div>
+<main>
+<div class="wrap"><div class="page-head"><div><span class="eyebrow">Almost there</span><h1 class="display honey">Your cart</h1></div></div>
+<div class="cart-grid"><div id="lines"></div>
+<aside class="sum" id="sum" hidden><h2>Order details</h2>
+<div class="sum-row"><span>Subtotal</span><span id="sub"></span></div>
+<p class="fine" id="askn" hidden>Some items need a price from us. We confirm it in our reply.</p>
+<div class="sum-row t"><span>Total</span><b id="tot"></b></div>
+<div class="msg warn" id="minmsg" role="alert" hidden></div>
+<div class="field"><label for="nm">Name</label><input class="input" id="nm" autocomplete="name"></div>
+<div class="field"><label for="ph">Phone</label><input class="input" id="ph" type="tel" autocomplete="tel"></div>
+<div class="field"><label for="lo">Delivery area</label><input class="input" id="lo" placeholder="City or neighborhood"></div>
+<div class="field"><label for="nt">Notes</label><textarea class="input" id="nt" rows="3"></textarea></div>
+<button class="btn lime block" id="wa" hidden>Send order via WhatsApp</button>
+<button class="btn block" id="cp" style="margin-top:14px">Copy order</button>
+<div class="msg" id="cm" hidden></div>
+<p class="fine">We reply with payment details. Payment comes first, then we arrange delivery. 21+ only.</p></aside></div></div>
+</main>
+<div id="ftr"></div>
+<script src="js/config.js"></script><script src="js/products.js"></script><script src="js/app.js"></script>
+</body></html>
