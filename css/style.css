@@ -341,3 +341,11 @@ select.input{width:auto;padding-right:36px}
   .sf-in .btn{padding:10px 16px}
   .top-in .brand img{height:34px}
 }
+
+/* bulk pricing */
+.tiers{margin:20px 0 0;padding:16px 18px;border-radius:18px;border:2px dashed rgba(255,194,58,.55);background:rgba(255,194,58,.06)}
+.tiers h4{margin:0 0 10px;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--lime)}
+.tiers ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.tiers li{display:flex;justify-content:space-between;gap:12px;color:#d9c9f5}
+.tiers li b{color:var(--honey);font-family:var(--display);font-weight:400;font-size:18px}
+.tiers p{margin:10px 0 0;color:var(--cream);font-weight:600}

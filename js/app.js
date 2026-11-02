@@ -35,7 +35,10 @@ var PH_ICON='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><pa
 var TG_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="#fff"/><path fill="#27a7e7" d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>';
 ICON.menu='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
 ICON.close='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
-var MIN_DISP=3;
+var MIN_ORDER=50;
+function tierPrice(q){return q>=20?12:q>=10?15:q>=5?20:25}
+function nextTier(q){return q>=20?null:q>=10?[20,12]:q>=5?[10,15]:[5,20]}
+function dispQty(){return cart.reduce(function(s,l){var p=byId[l.id];return s+(p&&p.cat==="disposables"?l.q:0)},0)}
 function phone(){return CFG.phone||"+1 (555) 000-0000"}
 function phoneHref(){return "tel:"+String(CFG.phoneHref||phone()).replace(/[^+\d]/g,"")}
 function tgUser(){return String(CFG.telegram||"username").replace(/^@/,"")}
@@ -90,7 +93,7 @@ function card(p){
   if(p.deal)b+='<span class="badge b-deal">Deal</span>';
   if(isNew(p))b+='<span class="badge b-new">New</span>';
   if(p.stock>0&&p.stock<=5)b+='<span class="badge b-low">Low stock</span>';
-  var tags=(p.tag?'<span class="tag">'+esc(p.tag)+'</span>':'')+(p.cat==='disposables'?'<span class="tag lb">Min 3</span>':'')+(p.lb?'<span class="tag lb">By the lb</span>':'');
+  var tags=(p.tag?'<span class="tag">'+esc(p.tag)+'</span>':'')+(p.lb?'<span class="tag lb">By the lb</span>':'');
   var quick=(!p.variants&&!p.choices&&pt)?'<button class="add" data-add="'+esc(p.id)+'" aria-label="Add '+esc(p.name)+' to cart">'+ICON.plus+'</button>':'<a class="add" href="product.html?id='+encodeURIComponent(p.id)+'" aria-label="Choose options for '+esc(p.name)+'">'+ICON.right+'</a>';
   return '<article class="card"><a href="product.html?id='+encodeURIComponent(p.id)+'" class="card-img" aria-label="'+esc(p.name)+'">'+imgOrPh(p)+(b?'<div class="badges">'+b+'</div>':'')+'</a><div class="card-body"><h3><a href="product.html?id='+encodeURIComponent(p.id)+'">'+esc(p.name)+'</a></h3><div class="tags">'+(p.sub?'<span class="tag">'+esc(p.sub)+'</span>':'')+tags+'</div><div class="price-row">'+(pt?'<div class="price">'+esc(pt)+'<small>'+unitText(p)+'</small></div>':'<div class="price ask">Ask for price</div>')+quick+'</div></div></article>'}
 
@@ -102,7 +105,7 @@ function addLine(id,vi,choice,q){
 document.addEventListener("click",function(e){
   var b=e.target.closest("[data-add]");if(!b)return;
   var p=byId[b.getAttribute("data-add")];if(!p)return;
-  addLine(p.id,0,"",1);toast("Added "+p.name+(p.cat==="disposables"?" (min 3 disposables)":""))});
+  addLine(p.id,0,"",1);toast("Added "+p.name)});
 
 /* HOME */
 function home(){
@@ -165,7 +168,7 @@ function product(){
   document.title=p.name+" | Blinks Bakery";
   var c=catBy[p.cat];
   $("#crumbs").innerHTML='<a href="index.html">Home</a> / <a href="shop.html?cat='+p.cat+'">'+esc(c?c.label:"Shop")+'</a> / '+esc(p.name);
-  var imgs=p.images||[],cur=0,vi=0,ch=(p.choices&&p.choices[0])||"",qty=p.cat==="disposables"?MIN_DISP:1;
+  var imgs=p.images||[],cur=0,vi=0,ch=(p.choices&&p.choices[0])||"",qty=1;
   function paint(){
     var main=imgs.length?'<img src="'+esc(imgs[cur])+'" alt="'+esc(p.name)+' photo '+(cur+1)+'">':'<div class="ph"><img src="img/brand/logo.webp" alt=""><span>Photo coming soon</span></div>';
     var nav=imgs.length>1?'<button class="gal-nav prev" data-g="-1" aria-label="Previous photo">'+ICON.left+'</button><button class="gal-nav next" data-g="1" aria-label="Next photo">'+ICON.right+'</button>':'';
@@ -175,7 +178,7 @@ function product(){
     var chh=p.choices?'<div class="opt"><h4>'+esc(p.choiceLabel||"Choose")+'</h4><div class="chips">'+p.choices.map(function(v){return '<button class="pill'+(v===ch?' on':'')+'" data-c="'+esc(v)+'">'+esc(v)+'</button>'}).join("")+'</div></div>':'';
     var tags=(p.sub?'<span class="tag">'+esc(p.sub)+'</span>':'')+(p.tag?'<span class="tag">'+esc(p.tag)+'</span>':'')+(p.lb?'<span class="tag lb">Sold by the lb</span>':'')+(p.deal?'<span class="tag">Deal</span>':'');
     var buy=pr==null?'<a class="btn lime block" href="cart.html" data-ask="1">Ask for price</a>':'<div class="qty sm" style="display:none"></div><div class="qty"><button data-q="-1" aria-label="Less">&minus;</button><input id="qin" inputmode="numeric" value="'+qty+'" aria-label="Quantity"><button data-q="1" aria-label="More">+</button></div><button class="btn" id="addb">Add to cart</button>';
-    root.innerHTML='<div><div class="gal-main">'+main+nav+'</div>'+th+'</div><div class="info"><h1 class="display honey">'+esc(p.name)+'</h1>'+(tags?'<div class="tags">'+tags+'</div>':'')+(pr==null?'<div class="big-price" style="font-size:30px;color:var(--cream);text-shadow:none">Ask for price</div>':'<div class="big-price">'+money(pr)+'<small>'+unitText(p)+'</small></div>')+vh+chh+'<div class="buy">'+buy+'</div>'+(p.cat==="disposables"?'<p class="min-note">Minimum order: '+MIN_DISP+' disposables (mix and match).</p>':'')+(p.stock>0&&p.stock<=5?'<p class="stock-note">Only '+p.stock+' left</p>':'')+'<ul class="perks"><li>'+ICON.check+'Send your order, we reply with payment details</li><li>'+ICON.check+'Payment first, then we set up delivery</li><li>'+ICON.check+'21+ only</li></ul></div>'}
+    root.innerHTML='<div><div class="gal-main">'+main+nav+'</div>'+th+'</div><div class="info"><h1 class="display honey">'+esc(p.name)+'</h1>'+(tags?'<div class="tags">'+tags+'</div>':'')+(pr==null?'<div class="big-price" style="font-size:30px;color:var(--cream);text-shadow:none">Ask for price</div>':'<div class="big-price">'+money(pr)+'<small>'+unitText(p)+'</small></div>')+vh+chh+'<div class="buy">'+buy+'</div>'+(p.cat==="disposables"?'<div class="tiers"><h4>Bulk pricing, mix and match</h4><ul><li><span>1 to 4</span><b>$25 each</b></li><li><span>5 to 9</span><b>$20 each</b></li><li><span>10 to 19</span><b>$15 each</b></li><li><span>20 or more</span><b>$12 each</b></li></ul><p>Minimum order $50.</p></div>':'')+(p.stock>0&&p.stock<=5?'<p class="stock-note">Only '+p.stock+' left</p>':'')+'<ul class="perks"><li>'+ICON.check+'Send your order, we reply with payment details</li><li>'+ICON.check+'Payment first, then we set up delivery</li><li>'+ICON.check+'21+ only</li></ul></div>'}
   paint();
   root.addEventListener("click",function(e){
     var t=e.target.closest("button,a");if(!t)return;
@@ -191,16 +194,18 @@ function product(){
 }
 
 /* CART */
-function lineInfo(l){var p=byId[l.id];if(!p)return null;var pr=unitPrice(p,l.v);return{p:p,pr:pr,opt:[p.variants&&p.variants[l.v]?p.variants[l.v].label:"",l.c].filter(Boolean).join(", ")}}
+function lineInfo(l){var p=byId[l.id];if(!p)return null;var pr=p.cat==="disposables"?tierPrice(dispQty()):unitPrice(p,l.v);return{p:p,pr:pr,opt:[p.variants&&p.variants[l.v]?p.variants[l.v].label:"",l.c].filter(Boolean).join(", ")}}
 function cartPage(){
   var box=$("#lines"),sum=$("#sum");
   function draw(){
     cart=cart.filter(function(l){return byId[l.id]});
     if(!cart.length){box.innerHTML='<div class="empty"><h3>Your cart is empty</h3><p>Fresh batches are waiting.</p><a class="btn" href="shop.html">Browse the menu</a></div>';sum.hidden=true;return}
-    sum.hidden=false;var tot=0,ask=false,dq=0;cart.forEach(function(l){if(byId[l.id].cat==="disposables")dq+=l.q});var short=dq>0&&dq<MIN_DISP;var mm=$("#minmsg");mm.hidden=!short;if(short)mm.textContent="Disposables have a minimum order of "+MIN_DISP+". Add "+(MIN_DISP-dq)+" more to continue.";$("#cp").disabled=short;$("#wa").disabled=short;
+    sum.hidden=false;var tot=0,ask=false;
     box.innerHTML=cart.map(function(l,i){var d=lineInfo(l),line=d.pr==null?null:d.pr*l.q;if(line==null)ask=true;else tot+=line;
       var im=d.p.images&&d.p.images[0]?'<img src="'+esc(d.p.images[0])+'" alt="">':'<div class="ph" style="padding:6px"><img src="img/brand/logo.webp" alt=""></div>';
       return '<div class="line">'+im+'<div><h3><a href="product.html?id='+encodeURIComponent(d.p.id)+'">'+esc(d.p.name)+'</a></h3><div class="opt-txt">'+esc(d.opt||(d.p.sub||""))+'</div><div class="ctrl"><div class="qty sm"><button data-i="'+i+'" data-d="-1" aria-label="Less">&minus;</button><input value="'+l.q+'" readonly aria-label="Quantity"><button data-i="'+i+'" data-d="1" aria-label="More">+</button></div><button class="link-btn" data-rm="'+i+'">Remove</button></div></div><div class="tot">'+(line==null?"Ask":money(line))+'</div></div>'}).join("");
+    var short=tot<MIN_ORDER;var mm=$("#minmsg");mm.hidden=!short;if(short)mm.textContent="Minimum order is "+money(MIN_ORDER)+". Add "+money(MIN_ORDER-tot)+" more to continue.";$("#cp").disabled=short;$("#wa").disabled=short;
+    var dq=dispQty(),tn=$("#tiernote");if(dq>0){var nt=nextTier(dq);tn.hidden=false;tn.textContent=dq+" disposable"+(dq>1?"s":"")+" in your cart at "+money(tierPrice(dq))+" each."+(nt?" Add "+(nt[0]-dq)+" more for "+money(nt[1])+" each.":" You have the best price.")}else tn.hidden=true;
     $("#sub").textContent=money(tot);$("#askn").hidden=!ask;$("#tot").textContent=money(tot)+(ask?" + ask":"");
     var wa=$("#wa");wa.hidden=!CFG.whatsapp}
   function order(){
