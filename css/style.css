@@ -230,14 +230,6 @@ select.input{width:auto;padding-right:36px}
 .toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,30px);opacity:0;pointer-events:none;z-index:90;padding:12px 14px 12px 20px;border-radius:999px;background:#1a0b30;border:2px solid var(--lime);box-shadow:0 14px 40px rgba(0,0,0,.6),0 0 30px rgba(125,255,46,.25);display:flex;align-items:center;gap:14px;font-weight:600;transition:.3s;max-width:calc(100% - 24px)}
 .toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 .toast a{padding:7px 16px;border-radius:999px;background:var(--lime);color:#10220a;font-weight:700;white-space:nowrap}
-.gate{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:20px;background:rgba(5,2,10,.93);backdrop-filter:blur(12px)}
-.gate[hidden]{display:none}
-.gate-box{width:min(480px,100%);text-align:center;padding:30px 26px 34px;border-radius:32px;background:linear-gradient(165deg,var(--card2),var(--card));border:3px solid rgba(255,194,58,.6);box-shadow:0 0 80px rgba(162,75,255,.45)}
-.gate-box img{width:200px;margin:0 auto 6px;mix-blend-mode:screen}
-.gate-box h2{font-size:46px}
-.gate-box p{color:#d9c9f5;margin:12px 0 24px}
-.gate-box .btn{margin:6px}
-.gate-no{color:var(--pink);font-weight:600;margin-top:14px}
 
 /* responsive */
 @media (max-width:1000px){
@@ -349,3 +341,15 @@ select.input{width:auto;padding-right:36px}
 .tiers li{display:flex;justify-content:space-between;gap:12px;color:#d9c9f5}
 .tiers li b{color:var(--honey);font-family:var(--display);font-weight:400;font-size:18px}
 .tiers p{margin:10px 0 0;color:var(--cream);font-weight:600}
+
+/* send buttons in cart */
+.btn.send{gap:12px;margin-top:12px;font-size:17px;padding:14px 18px;text-align:center}
+.btn.send svg{width:26px;height:26px;flex:none}
+.btn.send span{min-width:0}
+.btn.send.wa{background:#25d366;color:#04230f;box-shadow:0 6px 0 #128c4a,0 14px 30px rgba(37,211,102,.25)}
+.btn.send.wa:hover{box-shadow:0 9px 0 #128c4a,0 18px 34px rgba(37,211,102,.32)}
+.btn.send.wa:active{box-shadow:0 2px 0 #128c4a}
+.btn.send.tg{background:#27a7e7;color:#fff;box-shadow:0 6px 0 #1670a0,0 14px 30px rgba(39,167,231,.25)}
+.btn.send.tg:hover{box-shadow:0 9px 0 #1670a0,0 18px 34px rgba(39,167,231,.32)}
+.btn.send.tg:active{box-shadow:0 2px 0 #1670a0}
+.btn.send[disabled]{box-shadow:none;transform:none}
