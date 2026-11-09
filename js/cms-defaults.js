@@ -19,6 +19,7 @@ window.BB_DEFAULTS = {
     disposables: [{min: 1, price: 25}, {min: 5, price: 20}, {min: 10, price: 15}, {min: 20, price: 12}],
     shrooms: [{min: 1, price: 30}, {min: 5, price: 24}, {min: 10, price: 18}, {min: 20, price: 14}]
   },
+  payments: {list: [{name: "Bitcoin", on: true}, {name: "Chime", on: true}, {name: "Cash App", on: true}, {name: "Zelle", on: true}, {name: "Other", on: true}]},
   banner: {on: true, text: "Contact us: {phone}"},
   hero: {line1: "Fresh out", line2: "the", accent: "oven.", lead: "Flower, disposables, alcohol and shrooms, all in one cozy little bakery."},
   seo: {

@@ -160,3 +160,6 @@ input:disabled,select:disabled,textarea:disabled{background:#f1eef6;color:#7d739
 @media(max-width:860px){.gsearch kbd{display:none}}
 .toolbar input,.toolbar select{width:auto;min-width:160px}.toolbar .grow{flex:1 1 220px;width:auto}
 @media(max-width:520px){.toolbar input,.toolbar select,.toolbar .grow{width:100%;flex-basis:100%}}
+.pays .prow{display:grid;grid-template-columns:28px 1fr auto;gap:8px;margin-bottom:8px;align-items:center}
+.pays .prow input[type=text]{width:100%}
+.pays .prow .btn{justify-self:start}

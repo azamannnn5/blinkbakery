@@ -85,6 +85,10 @@ V.contact = {
       F("contact", "telegram", "Telegram username", {help: "Without the @ sign."}) +
       F("contact", "telegramLink", "Telegram chat link", {ph: "https://t.me/yourname", help: "Where the Send order via Telegram button opens."}) +
       F("contact", "whatsapp", "WhatsApp number", {ph: "16892827251", help: "Digits only with the country code. Leave empty if you do not use WhatsApp yet."}) + "</div></div>" +
+      '<div class="card pays"><h2>Payment methods <span data-tag="payments.list">' + A.kind(A.sChanged("payments", "list"), 'data-reset="payments.list"') + '</span></h2><p class="hint">The choices customers pick from in the cart. Untick one to hide it.</p>' +
+      A.sGet("payments").list.map(function (m, i) {
+        return '<div class="srow prow"><input type="checkbox" data-pm="on" data-i="' + i + '"' + (m.on ? " checked" : "") + ' aria-label="Show"><input type="text" data-pm="name" data-i="' + i + '" value="' + esc(m.name) + '" aria-label="Name"><button type="button" class="btn danger sm wr" data-act="rmpay" data-i="' + i + '">Remove</button></div>';
+      }).join("") + '<button type="button" class="btn ghost sm wr" data-act="addpay">Add a method</button></div>' +
       '<div class="card"><h2>Order messages</h2><p class="hint">Texts customers see in the cart and send to you.</p>' +
       F("orders", "orderTitle", "First line of every order message") +
       F("orders", "minMsg", "Message when the cart is under the minimum", {help: "Use {min} for the minimum and {more} for the amount still needed."}) +
@@ -94,6 +98,17 @@ V.contact = {
   },
   bind: function (page) {
     A.bindSettings(page);
+    var readPay = function () { return $$(".prow", page).map(function (r) { return {name: $('[data-pm="name"]', r).value, on: $('[data-pm="on"]', r).checked}; }); };
+    var payTag = function () { var t = $('[data-tag="payments.list"]'); if (t) t.innerHTML = A.kind(A.sChanged("payments", "list"), 'data-reset="payments.list"'); };
+    A.pageInput = function (e) { if (e.target.getAttribute("data-pm") === "name") { A.sSet("payments", "list", readPay()); payTag(); } };
+    A.pageChange = function (e) { if (e.target.getAttribute("data-pm") === "on") { A.sSet("payments", "list", readPay()); payTag(); } };
+    A.pageClick = function (e) {
+      var b = e.target.closest("[data-act]"); if (!b) return;
+      var a = b.getAttribute("data-act"); if (a !== "addpay" && a !== "rmpay") return;
+      var l = readPay();
+      if (a === "addpay") l.push({name: "New method", on: true}); else l.splice(+b.getAttribute("data-i"), 1);
+      A.sSet("payments", "list", l); A.render();
+    };
     A.onSetting = function (key, f, v) {
       if (key !== "contact") return;
       if (f === "phone") {

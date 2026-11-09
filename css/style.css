@@ -354,3 +354,8 @@ select.input{width:auto;padding-right:36px}
 .btn.send.tg:active{box-shadow:0 2px 0 #1670a0}
 .btn.send[disabled]{box-shadow:none;transform:none}
 .more[hidden]{display:none}
+
+.pay{display:flex;flex-wrap:wrap;gap:8px}
+.pp{padding:10px 16px;border-radius:999px;border:2px solid rgba(162,75,255,.45);background:#0c0615;color:var(--cream);font:inherit;font-weight:700;cursor:pointer}
+.pp.on{border-color:var(--lime);background:rgba(125,255,46,.14);color:var(--lime)}
+.prev{margin:0;padding:12px 14px;border-radius:14px;border:2px dashed rgba(162,75,255,.45);background:#0c0615;color:var(--cream);font:inherit;font-size:14px;white-space:pre-wrap;word-break:break-word}
