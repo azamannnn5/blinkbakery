@@ -4,5 +4,5 @@ window.BB_CONFIG = {
   phoneHref: "+16892827251",    // digits for the tap-to-call link
   telegram: "Josh_fred",         // Telegram username without @ (placeholder)
   telegramLink: "https://t.me/Josh_fred",             // optional: full Telegram chat link, e.g. https://t.me/yourname (overrides username)
-  whatsapp: ""                  // optional: digits with country code, enables "Send order via WhatsApp"
+  whatsapp: "16892827251"                  // optional: digits with country code, enables "Send order via WhatsApp"
 };

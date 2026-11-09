@@ -6,7 +6,7 @@ window.BB_DEFAULTS = {
     phoneHref: "+16892827251",
     telegram: "Josh_fred",
     telegramLink: "https://t.me/Josh_fred",
-    whatsapp: ""
+    whatsapp: "16892827251"
   },
   orders: {
     minOrder: 50,
