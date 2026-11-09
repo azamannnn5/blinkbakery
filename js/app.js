@@ -14,8 +14,9 @@ function save(){ls("bb_cart",JSON.stringify(cart));paintCount()}
 function totalQty(){return cart.reduce(function(a,l){return a+l.q},0)}
 
 /* pricing */
-function unitPrice(p,vi){if(p.variants&&p.variants.length){var v=p.variants[vi||0];return v?v.price:null}return p.price}
+function unitPrice(p,vi){if(TIERS[p.cat])return TIERS[p.cat][0].price;if(p.variants&&p.variants.length){var v=p.variants[vi||0];return v?v.price:null}return p.price}
 function priceText(p){
+  if(TIERS[p.cat])return money(TIERS[p.cat][0].price);
   if(p.variants&&p.variants.length){var m=Math.min.apply(null,p.variants.map(function(v){return v.price}));return "From "+money(m)}
   if(p.price==null)return null;return money(p.price)}
 function unitText(p){return p.lb?"/ lb":(p.unit==="pc"?"each":"")}
@@ -35,19 +36,24 @@ var PH_ICON='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><pa
 var TG_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="#fff"/><path fill="#27a7e7" d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>';
 ICON.menu='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
 ICON.close='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
-var MIN_ORDER=50;
-var TIERS={disposables:[25,20,15,12],shrooms:[30,24,18,14]};
+var SET=window.BB_SETTINGS||{},ORD=SET.orders||{},SEO=SET.seo||{},BN=SET.banner||{on:true,text:"Contact us: {phone}"};
+var SITE=SEO.siteName||"Blinks Bakery";
+var MIN_ORDER=+(ORD.minOrder!=null&&ORD.minOrder!==""?ORD.minOrder:50);
+var TIERS={};Object.keys(SET.pricing||{}).forEach(function(k){var s=SET.pricing[k];if(s&&s.length)TIERS[k]=s.slice().sort(function(a,b){return a.min-b.min})});
 var TIER_NAME={disposables:["disposable","disposables"],shrooms:["shroom item","shroom items"]};
-function tierIdx(q){return q>=20?3:q>=10?2:q>=5?1:0}
-function tierPrice(cat,q){return TIERS[cat][tierIdx(q)]}
-function nextTier(cat,q){var i=tierIdx(q);return i===3?null:[[5,10,20][i],TIERS[cat][i+1]]}
+function tierName(c,n){return (TIER_NAME[c]||["item","items"])[n]}
+function tierIdx(cat,q){var s=TIERS[cat],i=0;for(var k=0;k<s.length;k++)if(q>=s[k].min)i=k;return i}
+function tierPrice(cat,q){return TIERS[cat][tierIdx(cat,q)].price}
+function nextTier(cat,q){var i=tierIdx(cat,q),n=TIERS[cat][i+1];return n?[n.min,n.price]:null}
+function tierLabel(cat,i){var s=TIERS[cat],a=s[i],b=s[i+1];if(!b)return a.min+" or more";return b.min-1>a.min?a.min+" to "+(b.min-1):String(a.min)}
 function catQty(cat){return cart.reduce(function(s,l){var p=byId[l.id];return s+(p&&p.cat===cat?l.q:0)},0)}
 function phone(){return CFG.phone||"+1 (689) 282-7251"}
 function phoneHref(){return "tel:"+String(CFG.phoneHref||phone()).replace(/[^+\d]/g,"")}
 function tgUser(){return String(CFG.telegram||"username").replace(/^@/,"")}
 function header(){
   var links='<a href="index.html"'+(page==="home"?' class="on"':'')+'>Home</a>'+CATS.map(function(c){return '<a href="shop.html?cat='+c.id+'"'+(activeCat===c.id?' class="on"':'')+'>'+esc(c.label)+'</a>'}).join("")+'<a href="cart.html"'+(page==="cart"?' class="on"':'')+'>Cart</a>';
-  return '<div class="topbar"><a href="'+esc(phoneHref())+'">Contact us: <b>'+esc(phone())+'</b></a></div>'
+  var bar=BN.on===false?'':'<div class="topbar"><a href="'+esc(phoneHref())+'">'+String(BN.text==null?"Contact us: {phone}":BN.text).split("{phone}").map(esc).join('<b>'+esc(phone())+'</b>')+'</a></div>';
+  return bar
   +'<header class="top"><div class="wrap top-in">'
   +'<button class="icon-btn" id="mb" type="button" aria-label="Open menu" aria-controls="dr" aria-expanded="false">'+ICON.menu+'</button>'
   +'<a class="brand" href="index.html" aria-label="Blinks Bakery home"><img src="img/brand/wordmark.webp" alt="Blinks Bakery"></a>'
@@ -83,10 +89,11 @@ function imgOrPh(p,alt){
 function isNew(p){var d=Date.parse(p.created);return d&&(Date.now()-d)<1000*3600*24*21}
 function card(p){
   var pt=priceText(p),b="";
+  if(p.soldOut)b+='<span class="badge b-sold">Sold out</span>';
   if(p.deal)b+='<span class="badge b-deal">Deal</span>';
   if(isNew(p))b+='<span class="badge b-new">New</span>';
   var tags=(p.tag?'<span class="tag">'+esc(p.tag)+'</span>':'')+(p.lb?'<span class="tag lb">By the lb</span>':'');
-  var quick=(!p.variants&&!p.choices&&pt)?'<button class="add" data-add="'+esc(p.id)+'" aria-label="Add '+esc(p.name)+' to cart">'+ICON.plus+'</button>':'<a class="add" href="product.html?id='+encodeURIComponent(p.id)+'" aria-label="Choose options for '+esc(p.name)+'">'+ICON.right+'</a>';
+  var quick=(!p.variants&&!p.choices&&pt&&!p.soldOut)?'<button class="add" data-add="'+esc(p.id)+'" aria-label="Add '+esc(p.name)+' to cart">'+ICON.plus+'</button>':'<a class="add" href="product.html?id='+encodeURIComponent(p.id)+'" aria-label="Choose options for '+esc(p.name)+'">'+ICON.right+'</a>';
   return '<article class="card"><a href="product.html?id='+encodeURIComponent(p.id)+'" class="card-img" aria-label="'+esc(p.name)+'">'+imgOrPh(p)+(b?'<div class="badges">'+b+'</div>':'')+'</a><div class="card-body"><h3><a href="product.html?id='+encodeURIComponent(p.id)+'">'+esc(p.name)+'</a></h3><div class="tags">'+(p.sub?'<span class="tag">'+esc(p.sub)+'</span>':'')+tags+'</div><div class="price-row">'+(pt?'<div class="price">'+esc(pt)+'<small>'+unitText(p)+'</small></div>':'<div class="price ask">Ask for price</div>')+quick+'</div></div></article>'}
 
 /* cart ops */
@@ -101,6 +108,9 @@ document.addEventListener("click",function(e){
 
 /* HOME */
 function home(){
+  var hh=SET.hero,h1=$("#h1"),ld=$("#lead");
+  if(hh&&h1)h1.innerHTML=esc(hh.line1)+'<br>'+esc(hh.line2)+' <span class="honey">'+esc(hh.accent)+'</span>';
+  if(hh&&ld)ld.textContent=hh.lead;
   var cg=$("#cats");
   if(cg)cg.innerHTML=CATS.map(function(c){return '<a class="cat" href="shop.html?cat='+c.id+'"><img src="'+esc(c.img)+'" alt="'+esc(c.label)+' category" loading="lazy"><span class="n">'+c.count+' items</span><span class="go">Shop '+esc(c.label)+'</span></a>'}).join("");
   var fr=$("#fresh");
@@ -126,7 +136,7 @@ function shop(){
     var pr=function(p){var v=unitPrice(p,0);return v==null?1e9:v};
     if(st.sort==="low")r.sort(function(a,b){return pr(a)-pr(b)});
     else if(st.sort==="high")r.sort(function(a,b){return (pr(b)===1e9?-1:pr(b))-(pr(a)===1e9?-1:pr(a))});
-    else if(st.sort==="new"&&st.cat==="disposables"&&!st.q&&st.chip==="all")r.sort(function(a,b){return (a.pin||999)-(b.pin||999)});
+    else if(st.sort==="new"&&st.cat!=="all"&&!st.q&&st.chip==="all")r.sort(function(a,b){return (a.pin||999)-(b.pin||999)});
     else if(st.sort==="az")r.sort(function(a,b){return a.name.localeCompare(b.name)});
     return r}
   function draw(){
@@ -140,7 +150,7 @@ function shop(){
     $("#ttl").textContent=c?c.label:"The full menu";
     $("#sub").textContent=c?c.blurb:"Everything fresh out the oven.";
     var im=$("#hi");if(c){im.src=c.img;im.alt="";im.hidden=false}else im.hidden=true;
-    document.title=(c?c.label:"Shop")+" | Blinks Bakery";
+    document.title=(c?c.label:"Shop")+" | "+SITE;
     $$("#hdr a, .nav a").forEach(function(a){});
   }
   chipSet();head();draw();
@@ -158,7 +168,7 @@ function shop(){
 function product(){
   var id=new URLSearchParams(location.search).get("id"),p=byId[id],root=$("#pdp");
   if(!p){root.innerHTML='<div class="empty"><h3>Product not found</h3><a class="btn" href="shop.html">Back to the menu</a></div>';return}
-  document.title=p.name+" | Blinks Bakery";
+  document.title=p.name+" | "+SITE;
   var c=catBy[p.cat];
   $("#crumbs").innerHTML='<a href="index.html">Home</a> / <a href="shop.html?cat='+p.cat+'">'+esc(c?c.label:"Shop")+'</a> / '+esc(p.name);
   var imgs=p.images||[],cur=0,vi=0,ch=(p.choices&&p.choices[0])||"",qty=1;
@@ -170,8 +180,8 @@ function product(){
     var vh=p.variants?'<div class="opt"><h4>Size</h4><div class="chips">'+p.variants.map(function(v,i){return '<button class="pill'+(i===vi?' on':'')+'" data-v="'+i+'">'+esc(v.label)+' &middot; '+money(v.price)+'</button>'}).join("")+'</div></div>':'';
     var chh=p.choices?'<div class="opt"><h4>'+esc(p.choiceLabel||"Choose")+'</h4><div class="chips">'+p.choices.map(function(v){return '<button class="pill'+(v===ch?' on':'')+'" data-c="'+esc(v)+'">'+esc(v)+'</button>'}).join("")+'</div></div>':'';
     var tags=(p.sub?'<span class="tag">'+esc(p.sub)+'</span>':'')+(p.tag?'<span class="tag">'+esc(p.tag)+'</span>':'')+(p.lb?'<span class="tag lb">Sold by the lb</span>':'')+(p.deal?'<span class="tag">Deal</span>':'');
-    var buy=pr==null?'<a class="btn lime block" href="cart.html" data-ask="1">Ask for price</a>':'<div class="qty sm" style="display:none"></div><div class="qty"><button data-q="-1" aria-label="Less">&minus;</button><input id="qin" inputmode="numeric" value="'+qty+'" aria-label="Quantity"><button data-q="1" aria-label="More">+</button></div><button class="btn" id="addb">Add to cart</button>';
-    root.innerHTML='<div><div class="gal-main">'+main+nav+'</div>'+th+'</div><div class="info"><h1 class="display honey">'+esc(p.name)+'</h1>'+(tags?'<div class="tags">'+tags+'</div>':'')+(pr==null?'<div class="big-price" style="font-size:30px;color:var(--cream);text-shadow:none">Ask for price</div>':'<div class="big-price">'+money(pr)+'<small>'+unitText(p)+'</small></div>')+vh+chh+'<div class="buy">'+buy+'</div>'+(TIERS[p.cat]?'<div class="tiers"><h4>Bulk pricing, mix and match</h4><ul>'+[["1 to 4"],["5 to 9"],["10 to 19"],["20 or more"]].map(function(r,i){return '<li><span>'+r[0]+'</span><b>$'+TIERS[p.cat][i]+' each</b></li>'}).join("")+'</ul><p>Minimum order $50.</p></div>':'')+'<ul class="perks"><li>'+ICON.check+'Send your order, we reply with payment details</li><li>'+ICON.check+'Payment first, then we set up delivery</li></ul></div>'}
+    var buy=p.soldOut?'<button class="btn" type="button" disabled>Sold out</button>':pr==null?'<a class="btn lime block" href="cart.html" data-ask="1">Ask for price</a>':'<div class="qty sm" style="display:none"></div><div class="qty"><button data-q="-1" aria-label="Less">&minus;</button><input id="qin" inputmode="numeric" value="'+qty+'" aria-label="Quantity"><button data-q="1" aria-label="More">+</button></div><button class="btn" id="addb">Add to cart</button>';
+    root.innerHTML='<div><div class="gal-main">'+main+nav+'</div>'+th+'</div><div class="info"><h1 class="display honey">'+esc(p.name)+'</h1>'+(tags?'<div class="tags">'+tags+'</div>':'')+(pr==null?'<div class="big-price" style="font-size:30px;color:var(--cream);text-shadow:none">Ask for price</div>':'<div class="big-price">'+money(pr)+'<small>'+unitText(p)+'</small></div>')+vh+chh+'<div class="buy">'+buy+'</div>'+(TIERS[p.cat]?'<div class="tiers"><h4>Bulk pricing, mix and match</h4><ul>'+TIERS[p.cat].map(function(r,i){return '<li><span>'+tierLabel(p.cat,i)+'</span><b>'+money(r.price)+' each</b></li>'}).join("")+'</ul><p>Minimum order '+money(MIN_ORDER)+'.</p></div>':'')+'<ul class="perks"><li>'+ICON.check+'Send your order, we reply with payment details</li><li>'+ICON.check+'Payment first, then we set up delivery</li></ul></div>'}
   paint();
   root.addEventListener("click",function(e){
     var t=e.target.closest("button,a");if(!t)return;
@@ -189,20 +199,20 @@ function product(){
 /* CART */
 function lineInfo(l){var p=byId[l.id];if(!p)return null;var pr=TIERS[p.cat]?tierPrice(p.cat,catQty(p.cat)):unitPrice(p,l.v);return{p:p,pr:pr,opt:[p.variants&&p.variants[l.v]?p.variants[l.v].label:"",l.c].filter(Boolean).join(", ")}}
 function cartPage(){
-  var box=$("#lines"),sum=$("#sum");
+  var box=$("#lines"),sum=$("#sum"),cn=$("#cnote");if(cn&&ORD.cartNote)cn.textContent=ORD.cartNote;
   function draw(){
-    cart=cart.filter(function(l){return byId[l.id]});
+    cart=cart.filter(function(l){return byId[l.id]&&!byId[l.id].soldOut});
     if(!cart.length){box.innerHTML='<div class="empty"><h3>Your cart is empty</h3><p>Fresh batches are waiting.</p><a class="btn" href="shop.html">Browse the menu</a></div>';sum.hidden=true;return}
     sum.hidden=false;var tot=0,ask=false;
     box.innerHTML=cart.map(function(l,i){var d=lineInfo(l),line=d.pr==null?null:d.pr*l.q;if(line==null)ask=true;else tot+=line;
       var im=d.p.images&&d.p.images[0]?'<img src="'+esc(d.p.images[0])+'" alt="">':'<div class="ph" style="padding:6px"><img src="img/brand/logo.webp" alt=""></div>';
       return '<div class="line">'+im+'<div><h3><a href="product.html?id='+encodeURIComponent(d.p.id)+'">'+esc(d.p.name)+'</a></h3><div class="opt-txt">'+esc(d.opt||(d.p.sub||""))+'</div><div class="ctrl"><div class="qty sm"><button data-i="'+i+'" data-d="-1" aria-label="Less">&minus;</button><input value="'+l.q+'" readonly aria-label="Quantity"><button data-i="'+i+'" data-d="1" aria-label="More">+</button></div><button class="link-btn" data-rm="'+i+'">Remove</button></div></div><div class="tot">'+(line==null?"Ask":money(line))+'</div></div>'}).join("");
-    var short=tot<MIN_ORDER;var mm=$("#minmsg");mm.hidden=!short;if(short)mm.textContent="Minimum order is "+money(MIN_ORDER)+". Add "+money(MIN_ORDER-tot)+" more to continue.";$("#tg").disabled=short;$("#wa").disabled=short;
-    var tn=$("#tiernote"),notes=[];Object.keys(TIERS).forEach(function(c){var q=catQty(c);if(!q)return;var nt=nextTier(c,q);notes.push(q+" "+TIER_NAME[c][q>1?1:0]+" in your cart at "+money(tierPrice(c,q))+" each."+(nt?" Add "+(nt[0]-q)+" more for "+money(nt[1])+" each.":" You have the best price."))});tn.hidden=!notes.length;tn.textContent=notes.join(" ");
+    var short=tot<MIN_ORDER;var mm=$("#minmsg");mm.hidden=!short;if(short)mm.textContent=String(ORD.minMsg||"Minimum order is {min}. Add {more} more to continue.").replace("{min}",money(MIN_ORDER)).replace("{more}",money(MIN_ORDER-tot));$("#tg").disabled=short;$("#wa").disabled=short;
+    var tn=$("#tiernote"),notes=[];Object.keys(TIERS).forEach(function(c){var q=catQty(c);if(!q)return;var nt=nextTier(c,q);notes.push(q+" "+tierName(c,q>1?1:0)+" in your cart at "+money(tierPrice(c,q))+" each."+(nt?" Add "+(nt[0]-q)+" more for "+money(nt[1])+" each.":" You have the best price."))});tn.hidden=!notes.length;tn.textContent=notes.join(" ");
     $("#sub").textContent=money(tot);$("#askn").hidden=!ask;$("#tot").textContent=money(tot)+(ask?" + ask":"");
     }
   function order(){
-    var n=$("#nm").value.trim(),ph=$("#ph").value.trim(),lo=$("#lo").value.trim(),nt=$("#nt").value.trim(),tot=0,out=["Blinks Bakery order",""];
+    var n=$("#nm").value.trim(),ph=$("#ph").value.trim(),lo=$("#lo").value.trim(),nt=$("#nt").value.trim(),tot=0,out=[ORD.orderTitle||"Blinks Bakery order",""];
     cart.forEach(function(l){var d=lineInfo(l);if(!d)return;var line=d.pr==null?null:d.pr*l.q;if(line!=null)tot+=line;
       out.push(l.q+" x "+d.p.name+(d.opt?" ("+d.opt+")":"")+" - "+(line==null?"ask price":money(line)))});
     out.push("","Total: "+money(tot));
@@ -215,7 +225,7 @@ function cartPage(){
   $("#wa").onclick=function(){window.open(waUrl(),"_blank","noopener")};
   function tgLink(){return CFG.telegramLink||("https://t.me/"+tgUser())}
   function copyNow(t){var a=document.createElement("textarea");a.value=t;a.setAttribute("readonly","");a.style.cssText="position:fixed;top:0;left:0;opacity:0";document.body.appendChild(a);a.select();var ok=false;try{ok=document.execCommand("copy")}catch(e){}document.body.removeChild(a);if(!ok&&navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).catch(function(){})}return ok}
-  $("#tg").onclick=function(){var m=$("#cm");copyNow(order());m.textContent="Order copied. Paste it in the Telegram chat and hit send.";m.hidden=false;window.open(tgLink(),"_blank","noopener")};
+  $("#tg").onclick=function(){var m=$("#cm");copyNow(order());m.textContent=ORD.tgCopied||"Order copied. Paste it in the Telegram chat and hit send.";m.hidden=false;window.open(tgLink(),"_blank","noopener")};
   draw()}
 
 mount();

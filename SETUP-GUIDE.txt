@@ -1,0 +1,55 @@
+BLINKS BAKERY ADMIN PANEL SETUP
+
+What you get
+An admin panel at yoursite.com/admin. You sign in with one password and edit products, prices, photos, the top banner, texts, contact details and more. Changes are saved in Supabase and show on the live site within about a minute. Saving does not run a Netlify build, so edits cost no build credits.
+
+The site keeps working exactly as before until you finish these steps.
+
+
+STEP 1. Make the Supabase project
+1. Go to supabase.com, click New project, name it Blinks Bakery, pick a database password, and create it.
+2. Wait until it finishes setting up.
+
+STEP 2. Run the database SQL
+1. In Supabase open SQL Editor, then New query.
+2. Open supabase/1-schema.sql from the site folder, copy everything, paste it in, and press Run.
+3. You should see Success. Running it again later is safe.
+
+STEP 3. Get two values from Supabase
+Open Project Settings, then API (or Data API).
+1. Copy the Project URL.
+2. Copy the service_role key (under API Keys, secret key). Keep it private. It goes only into Netlify, never into the site files or GitHub.
+
+STEP 4. Add the three environment variables in Netlify
+In Netlify open your site, then Site configuration, then Environment variables, and add:
+ADMIN_PASSWORD = the password you want for the admin panel
+SUPABASE_URL = the Project URL from step 3
+SUPABASE_SERVICE_ROLE_KEY = the service_role key from step 3
+
+STEP 5. Deploy
+Push the site to GitHub so Netlify deploys it. The netlify folder and netlify.toml must be included. Environment variable changes only take effect on a new deploy.
+
+STEP 6. Sign in
+Open yoursite.com/admin and enter the ADMIN_PASSWORD. The panel starts with the built in menu and you change what you need.
+
+
+HOW IT WORKS
+The menu built into the site files is the starting point. The admin panel only stores what you change. Anything you do not touch stays as built. Every field shows Original or Changed, and Reset to original goes back.
+
+The admin panel talks to a Netlify Function (netlify/functions/admin.js). The function checks the password and then reads and writes Supabase using the service key, so the key never reaches the browser. The database tables are locked, so nothing else can read or write them.
+
+Visitors get one small public file from the same function. It is cached for a short time, so it does not use many function calls. A visitor's first visit may reload the page once if the menu changed since they last came. After that the site opens instantly from their saved copy and updates quietly in the background.
+
+
+CHANGING THE PASSWORD
+Edit ADMIN_PASSWORD in Netlify environment variables, then trigger a new deploy. Everyone gets signed out.
+
+
+GOOD TO KNOW
+Photos you upload go to Supabase Storage (bucket named media). They are shrunk automatically.
+Search engine title and description changes work for Google, but can take days to show in results.
+Maintenance mode shows visitors a Back soon page. The View the site link in the admin menu lets you see the real shop meanwhile.
+Download a backup from the Backup page now and then.
+This panel uses one shared password, so there are no separate user accounts.
+Promo codes are not included yet.
+Still to fill in on the site: the WhatsApp number (Contact and orders page).
