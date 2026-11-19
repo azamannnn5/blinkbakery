@@ -224,7 +224,7 @@ function cartPage(){
     cart.forEach(function(l){var d=lineInfo(l);if(!d)return;var line=d.pr==null?null:d.pr*l.q;if(line!=null)tot+=line;
       out.push(l.q+" x "+d.p.name+(d.opt?" ("+d.opt+")":"")+" - "+(line==null?"ask price":money(line)))});
     out.push("","Total: "+money(tot));
-    if(n)out.push("Name: "+n);if(ph)out.push("Phone: "+ph);if(stt)out.push("State: "+stt);if(lo)out.push("Location: "+lo);if(nt)out.push("Notes: "+nt);
+    if(n)out.push("Name: "+n);if(ph)out.push("Phone: "+ph);if(stt)out.push("State: "+stt);if(lo)out.push("Address: "+lo);if(nt)out.push("Notes: "+nt);
     if(PAYS.length)out.push("Payment: "+(pay||"not chosen yet"));
     return out.join("\n")}
   box.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;
