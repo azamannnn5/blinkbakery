@@ -217,24 +217,25 @@ function cartPage(){
   pb.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;pay=b.dataset.pay;try{sessionStorage.setItem("bb_pay",pay)}catch(x){}
     [].forEach.call(pb.children,function(c){var on=c===b;c.classList.toggle("on",on);c.setAttribute("aria-checked",on)});preview()});
   function preview(){var el=$("#prev");if(el)el.textContent=order()}
+  function needState(){if($("#st").value.trim())return false;var m=$("#cm");m.textContent="Please enter your state.";m.hidden=false;$("#st").focus();return true}
   function needPay(){if(pay||!PAYS.length)return false;var m=$("#cm");m.textContent="Please choose a payment method.";m.hidden=false;pb.scrollIntoView({block:"center"});return true}
   function order(){
-    var n=$("#nm").value.trim(),ph=$("#ph").value.trim(),lo=$("#lo").value.trim(),nt=$("#nt").value.trim(),tot=0,out=[ORD.orderTitle||"Blinks Bakery order",""];
+    var n=$("#nm").value.trim(),ph=$("#ph").value.trim(),lo=$("#lo").value.trim(),stt=$("#st").value.trim(),nt=$("#nt").value.trim(),tot=0,out=[ORD.orderTitle||"Blinks Bakery order",""];
     cart.forEach(function(l){var d=lineInfo(l);if(!d)return;var line=d.pr==null?null:d.pr*l.q;if(line!=null)tot+=line;
       out.push(l.q+" x "+d.p.name+(d.opt?" ("+d.opt+")":"")+" - "+(line==null?"ask price":money(line)))});
     out.push("","Total: "+money(tot));
-    if(n)out.push("Name: "+n);if(ph)out.push("Phone: "+ph);if(lo)out.push("Location: "+lo);if(nt)out.push("Notes: "+nt);
+    if(n)out.push("Name: "+n);if(ph)out.push("Phone: "+ph);if(stt)out.push("State: "+stt);if(lo)out.push("Location: "+lo);if(nt)out.push("Notes: "+nt);
     if(PAYS.length)out.push("Payment: "+(pay||"not chosen yet"));
     return out.join("\n")}
   box.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;
     if(b.dataset.d){var l=cart[+b.dataset.i];l.q=Math.max(1,Math.min(99,l.q+ +b.dataset.d));save();draw()}
     else if(b.dataset.rm){cart.splice(+b.dataset.rm,1);save();draw()}});
   function waUrl(){var n=String(CFG.whatsapp||"").replace(/\D/g,"");return "https://wa.me/"+n+"?text="+encodeURIComponent(order())}
-  $("#wa").onclick=function(){if(needPay())return;window.open(waUrl(),"_blank","noopener")};
+  $("#wa").onclick=function(){if(needState()||needPay())return;window.open(waUrl(),"_blank","noopener")};
   function tgLink(){return CFG.telegramLink||("https://t.me/"+tgUser())}
   function copyNow(t){var a=document.createElement("textarea");a.value=t;a.setAttribute("readonly","");a.style.cssText="position:fixed;top:0;left:0;opacity:0";document.body.appendChild(a);a.select();var ok=false;try{ok=document.execCommand("copy")}catch(e){}document.body.removeChild(a);if(!ok&&navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).catch(function(){})}return ok}
-  $("#tg").onclick=function(){if(needPay())return;var m=$("#cm");copyNow(order());m.textContent=ORD.tgCopied||"Order copied. Paste it in the Telegram chat and hit send.";m.hidden=false;window.open(tgLink(),"_blank","noopener")};
-  ["nm","ph","lo","nt"].forEach(function(i){$("#"+i).addEventListener("input",preview)});
+  $("#tg").onclick=function(){if(needState()||needPay())return;var m=$("#cm");copyNow(order());m.textContent=ORD.tgCopied||"Order copied. Paste it in the Telegram chat and hit send.";m.hidden=false;window.open(tgLink(),"_blank","noopener")};
+  ["nm","ph","st","lo","nt"].forEach(function(i){$("#"+i).addEventListener("input",preview)});
   var _d=draw;draw=function(){_d();preview()};
   draw()}
 
